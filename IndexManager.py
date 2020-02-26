@@ -7,7 +7,7 @@ import spacy
 
 
 class IndexManager:
-    __dim = 300  # Size of the vector representation of words in our FAISS dictionary
+    __dim = 300  # Size of the vector representation of words in our dictionary
 
     """ 
     Setting the potential number of different topics addressed by a document 
@@ -48,6 +48,10 @@ class IndexManager:
     We explain why in the github wiki of this project 
     """
     __pos_tags_to_keep = ["NN", "NNS", "NNP", "NNPS", "NE", "NNE"]
+    __alterable_parameters = ["n_clusters", "cluster_weight_threshold", "max_clustering_input_size",
+                              "cluster_affinity", "cluster_linkage", "dic_dir", "json_words_count_label",
+                              "json_id_label", "fr_dic_name", "en_dic_name", "it_dic_name", "de_dic_name",
+                              "pos_tags_to_keep"]
 
     def __init__(self, path=None):
         self.__nlp = None  # Placeholder for loading a spacy nlp object later
@@ -67,6 +71,18 @@ class IndexManager:
                 self.__index = faiss.read_index(path)
             except:
                 print("Index could not be found or loaded in the path provided.")
+
+    def set_parameter(self, name, value):
+        if name in self.__alterable_parameters:
+            try:
+                exec("self.__" + str(name) + "=" + str(value))
+                return True
+            except:
+                print("Wrong value for the parameter")
+                return False
+        else:
+            print("No alterable parameter named", name, ". Try :", ", ".join(self.__alterable_parameters))
+            return False
 
     def set_dictionary(self, lang):
         """
