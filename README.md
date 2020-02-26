@@ -1,8 +1,6 @@
 # HYBRID-TOPIC
-Topic modelling, Semantic similarity search  
-Here we provide an Index Manager for **FAISS** (Facebook Artificial Intelligence Similarity Search)  
-It gives the ability to index text documents (using only the words along with their frequencies for now) as vectors that 
-encapsulate semantic information about its (possibly multiple) topics and quickly search for related documents in this Index that can be stored in a file for easier external access. 
+Here we provide an Index Manager based on **FAISS** (Facebook Artificial Intelligence Similarity Search) for fast Approximate Nearest-Neighbors search as well as pre-trained and aligned **FastText** dictionaries for word embeddings.
+Our IndexManager gives the ability to index text documents (using only the words along with their frequencies for now) as vectors that encapsulate semantic information about its (possibly multiple) topics and quickly search for related documents in this Index that can be stored in a file for easier external access. Typical use : recommendation and suggestion.
 # Requirements
 Python 3 and the following modules should be installed :
 - FAISS
