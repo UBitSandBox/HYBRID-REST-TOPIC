@@ -19,7 +19,7 @@ class IndexManager:
     complete or maximum linkage uses the maximum distances between all observations of the two sets.
     single uses the minimum of the distances between all observations of the two sets.
     """
-    __dic_dir = "/home/ubit-mse/PycharmProjects/json2vec/json2vec/"  # path of the directory where the dictionaries are
+    __dic_dir = os.path.dirname(os.path.realpath(__file__))  # path of the directory where the dictionaries are
     __json_words_count_label = "wordsCount"  # name of the json field containing our frequency distribution of words
     __json_id_label = "modelId"  # name of the json field storing the document ID
     __fr_dic_name = "wiki.fr.align.vec"  # name of the dictionary file for french
