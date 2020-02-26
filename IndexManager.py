@@ -7,43 +7,65 @@ import spacy
 
 
 class IndexManager:
-    __nlp = None
-    __lang = None
-    __n_clusters = 5  # number of topics clusters by document
-    __cluster_weight_threshold = 1/__n_clusters  # a cluster containing a smaller proportion of words won't be kept
-    __cluster_affinity = "cosine"  # Can be “euclidean”, “l1”, “l2”, “manhattan”, “cosine”
-    __cluster_linkage = "average"  # Can be “ward” (ONLY FOR EUCLIDEAN), “complete”, “average”, “single”
+    __dim = 300  # Size of the vector representation of words in our FAISS dictionary
+
+    """ 
+    Setting the potential number of different topics addressed by a document 
+    and the minimum relative importance they should have 
+    in order to be considered as important enough to characterize the document
     """
-    ward minimizes the variance of the clusters being merged.
-    average uses the average of the distances of each observation of the two sets.
-    complete or maximum linkage uses the maximum distances between all observations of the two sets.
-    single uses the minimum of the distances between all observations of the two sets.
-    """
-    __dic_dir = os.path.dirname(os.path.realpath(__file__))  # path of the directory where the dictionaries are
-    __json_words_count_label = "wordsCount"  # name of the json field containing our frequency distribution of words
-    __json_id_label = "modelId"  # name of the json field storing the document ID
-    __fr_dic_name = "wiki.fr.align.vec"  # name of the dictionary file for french
-    __en_dic_name = "wiki.en.align.vec"  # name of the dictionary file for english
-    __it_dic_name = "wiki.it.align.vec"  # name of the dictionary file for italian
-    __de_dic_name = "wiki.de.align.vec"  # name of the dictionary file for german
-    __pos_tags_to_keep = ["NN", "NNS", "NNP", "NNPS", "NE", "NNE"]
+    __n_clusters = 5
+    __cluster_weight_threshold = 1/__n_clusters  # A cluster containing a smaller proportion of words won't be kept
     __max_clustering_input_size = 1000
 
+    """
+    Setting the Agglomerative Clustering method parameters :
+    
+    Linkage methods :
+    - 'ward' minimizes the variance of the clusters being merged.
+    - 'average' uses the average of the distances of each observation of the two sets.
+    - 'complete' uses the maximum distances between all observations of the two sets.
+    - 'single' uses the minimum of the distances between all observations of the two sets.
+    
+    Affinity measure : 
+    This defines the way we measure distance between vectors used by the linkage process
+    Those are standard distance metrics and they are well documented on the Internet
+    """
+    __cluster_affinity = "cosine"  # Can be “euclidean”, “l1”, “l2”, “manhattan”, “cosine”
+    __cluster_linkage = "average"  # Can be “complete”, “average”, “single”, or “ward” (ONLY IF AFFINITY IS EUCLIDEAN),
+
+    __dic_dir = os.path.dirname(os.path.realpath(__file__))  # Path of the directory where the dictionaries are
+    __json_words_count_label = "wordsCount"  # Name of the json field containing our frequency distribution of words
+    __json_id_label = "modelId"  # Name of the json field storing the document ID
+    __fr_dic_name = "wiki.fr.align.vec"  # Name of the dictionary file for french
+    __en_dic_name = "wiki.en.align.vec"  # Name of the dictionary file for english
+    __it_dic_name = "wiki.it.align.vec"  # Name of the dictionary file for italian
+    __de_dic_name = "wiki.de.align.vec"  # Name of the dictionary file for german
+    """
+    Part-Of-Speech tagging and filtering is done with the following list
+    The list of TAGs is available in the Spacy Documentation
+    By default, we keep those corresponding to nouns
+    We explain why in the github wiki of this project 
+    """
+    __pos_tags_to_keep = ["NN", "NNS", "NNP", "NNPS", "NE", "NNE"]
+
     def __init__(self, path=None):
-        self.__dim = 300  # size of the vector representation of words
-        self.__dic = dict()
-        """ Preparing for Hierarchical Clustering with n clusters """
+        self.__nlp = None  # Placeholder for loading a spacy nlp object later
+        self.__lang = None  # Will be set as soon as we load a dictionary
+        self.__dic = dict()  # Placeholder for loading dictionaries
         self.__clusterer = AgglomerativeClustering(n_clusters=self.__n_clusters,
                                                    affinity=self.__cluster_affinity,
                                                    linkage=self.__cluster_linkage)
+        """ 
+        If no path is given, we initialise an empty index 
+        Otherwise, we load a previously-build index 
+        """
         if path is None:
-            """ If no path is given, we initialise an empty index """
             self.__index = faiss.IndexIDMap2(faiss.IndexFlatL2(self.__dim))
         else:
-            """ Otherwise, we load a previously-build index """
             try:
                 self.__index = faiss.read_index(path)
-            except FileNotFoundError:
+            except:
                 print("Index could not be found or loaded in the path provided.")
 
     def set_dictionary(self, lang):
@@ -86,12 +108,17 @@ class IndexManager:
             "en": "en_core_web_sm",
             "it": "it_core_news_sm"
         }
+
+        """
+        Here we disable 'ner' and 'parser' pipelines from the nlp preprocessing spacy offers  
+        since we only will use POS-tagging and lemmatization
+        """
         self.__nlp = spacy.load(nlp_loader[self.__lang], disable=["ner", "parser"])
 
     def __word2vec(self, word):
         """
         Performs word embedding when possible
-        :param word: self-explanatory
+        :param word: string, self-explanatory
         :return: vector representation of the given word, or None if the word is not recognized
         """
         if word in self.__dic:
@@ -104,8 +131,8 @@ class IndexManager:
 
     def __json2vectors_and_weights(self, path):
         """
-        Opens a the json at given path and returns vectors and weights
-        :param path: self-explanatory
+        Opens a .json file at given path and returns vectors and weights
+        :param path: string, self-explanatory
         :return: list of tuples [(first_vector, first_weight), ... ]
         """
         with open(path, "r", encoding='utf-8') as f:  # Loads the json file as a dictionary
@@ -127,22 +154,35 @@ class IndexManager:
         for (i, word) in enumerate(words):
             if word in words_to_keep:
                 cleaned_content.append((lemmatizer[word], weights[i]))
-        # Here we can aggregate similar lemmas
+
+        """ Here we aggregate possibly similar lemmas """
+        dict_holder = {}
+        for k, v in cleaned_content:
+            if k not in dict_holder:
+                dict_holder[k] = v
+            else:
+                dict_holder[k] += v
+        cleaned_content = [(k, v) for k, v in dict_holder.items()]
 
         """ Replacing words with their vector representation """
         result = []
         for (key, value) in cleaned_content:
             if self.__word2vec(key) is not None:
                 result.append((self.__word2vec(key), value))
+
+        """ Truncate result if too many vectors (to have reasonable computing time) """
         if len(result) > self.__max_clustering_input_size:
             result = sorted(result, key=lambda tup: tup[1], reverse=True)[:self.__max_clustering_input_size]
+
         return result
 
     def __json2id(self, path):
         """
         Extracts ID from given json
-        :param path: path from the json file
+        :param path: string, self-explanatory
         :return: integer representing the "hopefully unique" ID stored in the file
+        (FAISS index allows ID duplicates but it will lead to problems when searching for that ID
+        so I recommend that you make sure of ID uniqueness before trying to add them to index)
         """
         with open(path, "r", encoding='utf-8') as f:
             int_id = int(json.load(f)[self.__json_id_label])
@@ -151,7 +191,7 @@ class IndexManager:
     def __vectors_grouping(self, vectors):
         """
         :param vectors: list of vectors
-        :return: list of integer labels indicating to which cluster the given vectors belong
+        :return: list of integer labels indicating to which cluster the given vectors belongs
         by performing Hierarchical Agglomerative Clustering
         """
         self.__clusterer.fit_predict(vectors)
@@ -160,8 +200,8 @@ class IndexManager:
 
     def add(self, path):
         """
-        Adding an element
-        :param path: path
+        Adding an element to the FAISS Index
+        :param path: string, path to the json
         :return: boolean answering to "Has the element been successfully added ?"
         If the element is not enough informative for forming topics clusters, it won't be added for example
         """
@@ -182,7 +222,7 @@ class IndexManager:
                 means.append(np.average(v, axis=0, weights=w))
                 cluster_importance.append(sum(w))
 
-            """ Filtering unsignificant clusters with a threshold """
+            """ Filtering un-significant clusters with the threshold we set earlier """
             keep = [c / sum(cluster_importance) > self.__cluster_weight_threshold for c in cluster_importance]
 
             int_id = self.__json2id(path)
@@ -198,8 +238,7 @@ class IndexManager:
     def save(self, path):
         """
         Saves current state of the index in a file
-        :param path: path where to save the index
-        :return: nothing, saves index in-place
+        :param path: string, path indicating where to save the index
         """
         faiss.write_index(self.__index, path)
 
@@ -207,7 +246,6 @@ class IndexManager:
         """
         Loads an existing index
         :param path: path
-        :return: nothing, loads in-place
         """
         try:
             self.__index = faiss.read_index(path)
@@ -239,7 +277,10 @@ class IndexManager:
             except:
                 pass
 
-        """ Document-level distance is here defined as the minimum of all the distances between topics clusters """
+        """ 
+        Document-level distance is here defined for now as 
+        the minimum of all the distances between topics clusters barycenters 
+        """
         min_dist = {}
 
         decreasing_tuples = sorted(list(zip(distance_list, id_list)), key=lambda tup: tup[0], reverse=True)
@@ -254,9 +295,9 @@ class IndexManager:
 
     def show(self, document_id):
         """
-        Reconstructs the vectors
+        Reconstructs the vectors from ID and print them
         :param document_id: ID of the document
-        :return: prints reconstructed vectors from document
+        :return: prints reconstructed vectors associated with the document
         """
         vectors = []
         for i in range(self.__n_clusters*document_id, self.__n_clusters*(document_id+1)):
