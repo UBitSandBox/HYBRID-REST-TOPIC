@@ -4,6 +4,7 @@ import json
 import os
 from sklearn.cluster import AgglomerativeClustering
 import spacy
+import itertools
 
 
 class IndexManager:
@@ -276,29 +277,24 @@ class IndexManager:
         :return: list of IDs and distances of the k nearest neighbors
         """
 
+        ids_to_try = np.arange(self.__n_clusters * document_id, self.__n_clusters * (document_id + 1))
+
         distance_list = []
         id_list = []
-
-        ids_to_try = np.arange(self.__n_clusters * document_id, self.__n_clusters * (document_id + 1))
         for id_to_try in ids_to_try:
             try:
                 distances, ids = self.__index.search(self.__index.reconstruct(int(id_to_try)).reshape((1, self.__dim)),
                                                      self.__n_clusters * k_neighbors)
-                for d in distances:
-                    for sub_d in d:
-                        distance_list.append(sub_d)
-                for i in ids:
-                    for sub_i in i:
-                        id_list.append(sub_i)
+                distance_list.extend(itertools.chain(*distances))
+                id_list .extend(itertools.chain(*ids))
             except:
                 pass
 
         """ 
-        Document-level distance is here defined for now as 
-        the minimum of all the distances between topics clusters barycenters 
+        Document-level distance is here defined (for now) as 
+        the minimum of all the distances between topics clusters bary-centers 
         """
         min_dist = {}
-
         decreasing_tuples = sorted(list(zip(distance_list, id_list)), key=lambda tup: tup[0], reverse=True)
         for (d, i) in decreasing_tuples:
             min_dist[np.math.floor(i / self.__n_clusters)] = d
@@ -307,7 +303,7 @@ class IndexManager:
         if len(results) > 0:
             return results
         else:
-            raise Exception("Nothing has been found")
+            return [(False, False)]
 
     def show(self, document_id):
         """
