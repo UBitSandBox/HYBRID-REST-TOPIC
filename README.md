@@ -9,9 +9,11 @@ Python 3 and the following modules should be installed :
 - Scikit-learn
 
 Also you should have dictionaries with word embeddings  
-We used the aligned pre-trained vectors dictionaries from FastText [1, 2]  
+We used the aligned pre-trained vectors dictionaries from FastText [1, 2]
 You can found them here : https://fasttext.cc/docs/en/aligned-vectors.html
+
 ---
+
 #### References for fastText aligned dictionaries 
 <a id="1">[1]</a> 
 Joulin, A., Bojanowski, P., Mikolov, T., Jégou, H., & Grave, E. (2018). 
@@ -22,6 +24,7 @@ In Proceedings of the 2018 Conference on Empirical Methods in Natural Language P
 Bojanowski, P., Grave, E., Joulin, A., & Mikolov, T. (2017). 
 Enriching Word Vectors with Subword Information.
 Transactions of the Association for Computational Linguistics, 5, 135–146.
+
 ---
 
 # Usage
