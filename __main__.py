@@ -10,6 +10,7 @@ json_path = "json/de/"
 if not os.path.exists(os.path.join(dir_path, index_file_name)):
     start = time.clock()
     IM = json2vec.IndexManager()
+    IM.set_parameter("n_clusters", 3)
     IM.set_dictionary(test_lang)
     mid = time.clock()
     path = os.path.join(dir_path, json_path)
@@ -22,15 +23,9 @@ if not os.path.exists(os.path.join(dir_path, index_file_name)):
           "seconds")
 
 IM = json2vec.IndexManager(os.path.join(dir_path, index_file_name))
-
-try:
-    start = time.clock()
-    Distances, IDs = zip(*IM.search(2000, 10))
-    end = time.clock()
-    print(Distances)
-    print(IDs)
-    print("Found in", end - start, "seconds.")
-except:
-    pass
-
-
+start = time.clock()
+Distances, IDs = zip(*IM.search(2000, 10))
+end = time.clock()
+print(Distances)
+print(IDs)
+print("Found in", end - start, "seconds.")
