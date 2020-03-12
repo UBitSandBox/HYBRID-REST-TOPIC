@@ -1,2 +1,2 @@
-from json2vec.IndexManager import IndexManager
+from IndexManager import IndexManager
 
