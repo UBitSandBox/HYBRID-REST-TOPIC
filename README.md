@@ -9,7 +9,7 @@ Python 3 and the following modules should be installed :
 - Scikit-learn
 
 Also you should have dictionaries with word embeddings  
-We used the aligned pre-trained vectors dictionaries from FastText [1, 2]
+We used the aligned pre-trained vectors dictionaries from FastText [1, 2]  
 You can found them here : https://fasttext.cc/docs/en/aligned-vectors.html
 
 ---
