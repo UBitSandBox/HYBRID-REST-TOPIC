@@ -8,82 +8,43 @@ import itertools
 
 
 class IndexManager:
-    __dim = 300  # Size of the vector representation of words in our dictionary
+    def __init__(self, **kwargs):
+        self.__dim = 300
+        self.__n_clusters = 5
+        self.__cluster_weight_threshold = 0.2
+        self.__max_clustering_input_size = 1000
+        self.__cluster_affinity = "cosine"
+        self.__cluster_linkage = "average"
+        self.__dic_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dictionaries')
+        self.__json_words_count_label = "wordsCount"
+        self.__json_id_label = "modelId"
+        self.__pos_tags_to_keep = ["NN", "NNS", "NNP", "NNPS", "NE", "NNE"]
+        self.__alterable_parameters = ["n_clusters", "cluster_weight_threshold", "max_clustering_input_size",
+                                       "cluster_affinity", "cluster_linkage", "dic_dir", "json_words_count_label",
+                                       "json_id_label", "pos_tags_to_keep"]
+        self.__nlp = None
+        self.__lang = None
+        self.__dic = dict()
+        self.__specific_terminology = dict()
+        self.__cluster_maker = AgglomerativeClustering(n_clusters=self.__n_clusters,
+                                                       affinity=self.__cluster_affinity,
+                                                       linkage=self.__cluster_linkage)
+        path = kwargs.get('path', None)
 
-    """ 
-    Setting the potential number of different topics addressed by a document 
-    and the minimum relative importance they should have 
-    in order to be considered as important enough to characterize the document
-    """
-    __n_clusters = 5
-    __cluster_weight_threshold = 1/__n_clusters  # A cluster containing a smaller proportion of words won't be kept
-    __max_clustering_input_size = 1000
+        for (k, v) in kwargs.items():
+            if hasattr(self, k) and k in self.__alterable_parameters:
+                setattr(self, '__' + k, v)
 
-    """
-    Setting the Agglomerative Clustering method parameters :
-    
-    Linkage methods :
-    - 'ward' minimizes the variance of the clusters being merged.
-    - 'average' uses the average of the distances of each observation of the two sets.
-    - 'complete' uses the maximum distances between all observations of the two sets.
-    - 'single' uses the minimum of the distances between all observations of the two sets.
-    
-    Affinity measure : 
-    This defines the way we measure distance between vectors used by the linkage process
-    Those are standard distance metrics and they are well documented on the Internet
-    """
-    __cluster_affinity = "cosine"  # Can be “euclidean”, “l1”, “l2”, “manhattan”, “cosine”
-    __cluster_linkage = "average"  # Can be “complete”, “average”, “single”, or “ward” (ONLY IF AFFINITY IS EUCLIDEAN),
-
-    __dic_dir = os.path.dirname(os.path.realpath(__file__))  # Path of the directory where the dictionaries are
-    __json_words_count_label = "wordsCount"  # Name of the json field containing our frequency distribution of words
-    __json_id_label = "modelId"  # Name of the json field storing the document ID
-    __fr_dic_name = "wiki.fr.align.vec"  # Name of the dictionary file for french
-    __en_dic_name = "wiki.en.align.vec"  # Name of the dictionary file for english
-    __it_dic_name = "wiki.it.align.vec"  # Name of the dictionary file for italian
-    __de_dic_name = "wiki.de.align.vec"  # Name of the dictionary file for german
-    """
-    Part-Of-Speech tagging and filtering is done with the following list
-    The list of TAGs is available in the Spacy Documentation
-    By default, we keep those corresponding to nouns
-    We explain why in the github wiki of this project 
-    """
-    __pos_tags_to_keep = ["NN", "NNS", "NNP", "NNPS", "NE", "NNE"]
-    __alterable_parameters = ["n_clusters", "cluster_weight_threshold", "max_clustering_input_size",
-                              "cluster_affinity", "cluster_linkage", "dic_dir", "json_words_count_label",
-                              "json_id_label", "fr_dic_name", "en_dic_name", "it_dic_name", "de_dic_name",
-                              "pos_tags_to_keep"]
-
-    def __init__(self, path=None):
-        self.__nlp = None  # Placeholder for loading a spacy nlp object later
-        self.__lang = None  # Will be set as soon as we load a dictionary
-        self.__dic = dict()  # Placeholder for loading dictionaries
-        self.__clusterer = AgglomerativeClustering(n_clusters=self.__n_clusters,
-                                                   affinity=self.__cluster_affinity,
-                                                   linkage=self.__cluster_linkage)
-        """ 
-        If no path is given, we initialise an empty index 
-        Otherwise, we load a previously-build index 
-        """
-        if path is None:
-            self.__index = faiss.IndexIDMap2(faiss.IndexFlatL2(self.__dim))
+        if path is not None:
+            self.__index = faiss.read_index(path)
         else:
-            try:
-                self.__index = faiss.read_index(path)
-            except:
-                print("Index could not be found or loaded in the path provided.")
+            self.__index = faiss.IndexIDMap2(faiss.IndexFlatL2(self.__dim))
 
     def set_parameter(self, name, value):
         if name in self.__alterable_parameters:
-            try:
-                exec("self.__" + str(name) + "=" + str(value))
-                return True
-            except:
-                print("Wrong value for the parameter")
-                return False
+            setattr(self, '__' + name, value)
         else:
-            print("No alterable parameter named", name, ". Try :", ", ".join(self.__alterable_parameters))
-            return False
+            print("No alterable parameter named {}. Try : {}".format(name, ", ".join(self.__alterable_parameters)))
 
     def set_dictionary(self, lang):
         """
@@ -91,24 +52,12 @@ class IndexManager:
         :param lang: string representing the wanted language
         :return:
         """
+        self.__lang = lang
+        self.__nlp = spacy.load("{}_core_{}_sm".format(lang, ("web" if lang == "en" else "news")),
+                                disable=["ner", "parser"])
 
-        path_switcher = {
-            "fr": self.__fr_dic_name,
-            "en": self.__en_dic_name,
-            "it": self.__it_dic_name,
-            "de": self.__de_dic_name
-        }
-
-        if lang in path_switcher:
-            """ If we have a dictionary for the provided language, we set the path for loading it afterwards """
-            dic_path = path_switcher[lang]
-        else:
-            raise Exception("Language is not recognized, try one of the followings : "
-                            +
-                            ", ".join([str(key) for key in path_switcher.keys()]))
-
+        dic_path = "wiki.{}.align.vec".format(lang)
         dic = {}
-
         """ Reading the .vec dictionary and storing it in a Python dictionary """
         with open(os.path.join(self.__dic_dir, dic_path), 'r', encoding='utf-8') as f:
             for line in f:
@@ -116,21 +65,22 @@ class IndexManager:
                 word = values[0]
                 vector = np.asarray(values[1:], dtype='float32')
                 dic[word] = vector
+        self.__dic = dic
 
-        self.__dic = dic  # Assigning the dictionary to the IndexManager object for out-of-scope usability
-        self.__lang = lang
-        nlp_loader = {
-            "fr": "fr_core_news_sm",
-            "de": "de_core_news_sm",
-            "en": "en_core_web_sm",
-            "it": "it_core_news_sm"
-        }
+        specific_path = "{}.term.json".format(lang)
+        specific = {}
+        try:
+            with open(os.path.join(self.__dic_dir, specific_path), 'r', encoding='utf-8') as f:
+                specific = json.load(f.read())
+        except FileNotFoundError:
+            pass
+        self.__specific_terminology = specific
 
+    def get_size(self):
         """
-        Here we disable 'ner' and 'parser' pipelines from the nlp preprocessing spacy offers  
-        since we only will use POS-tagging and lemmatization
+        :return: size of the index
         """
-        self.__nlp = spacy.load(nlp_loader[self.__lang], disable=["ner", "parser"])
+        return self.__index.ntotal
 
     def __word2vec(self, word):
         """
@@ -141,9 +91,10 @@ class IndexManager:
         if word in self.__dic:
             """ Recognized words are simply replaced by their vector representation """
             result = self.__dic[word]
+        elif word in self.__specific_terminology:
+            result = self.__specific_terminology[word]
         else:
             result = None
-
         return result
 
     def __json2vectors_and_weights(self, path):
@@ -190,7 +141,6 @@ class IndexManager:
         """ Truncate result if too many vectors (to have reasonable computing time) """
         if len(result) > self.__max_clustering_input_size:
             result = sorted(result, key=lambda tup: tup[1], reverse=True)[:self.__max_clustering_input_size]
-
         return result
 
     def __json2id(self, path):
@@ -211,8 +161,8 @@ class IndexManager:
         :return: list of integer labels indicating to which cluster the given vectors belongs
         by performing Hierarchical Agglomerative Clustering
         """
-        self.__clusterer.fit_predict(vectors)
-        labels = self.__clusterer.labels_.tolist()
+        self.__cluster_maker.fit_predict(vectors)
+        labels = self.__cluster_maker.labels_.tolist()
         return labels
 
     def add(self, path):
@@ -286,7 +236,7 @@ class IndexManager:
                 distances, ids = self.__index.search(self.__index.reconstruct(int(id_to_try)).reshape((1, self.__dim)),
                                                      self.__n_clusters * k_neighbors)
                 distance_list.extend(itertools.chain(*distances))
-                id_list .extend(itertools.chain(*ids))
+                id_list.extend(itertools.chain(*ids))
             except:
                 pass
 
@@ -312,15 +262,9 @@ class IndexManager:
         :return: prints reconstructed vectors associated with the document
         """
         vectors = []
-        for i in range(self.__n_clusters*document_id, self.__n_clusters*(document_id+1)):
+        for i in range(self.__n_clusters * document_id, self.__n_clusters * (document_id + 1)):
             try:
                 vectors.append(self.__index.reconstruct(i))
             except:
                 pass
         print(vectors)
-
-    def size(self):
-        """
-        :return: size of the index
-        """
-        return self.__index.ntotal
