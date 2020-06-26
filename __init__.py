@@ -1,2 +1,0 @@
-from IndexManager import IndexManager
-
