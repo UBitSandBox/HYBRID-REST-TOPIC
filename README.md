@@ -1,5 +1,8 @@
 # HYBRID-REST-TOPIC
-Here we provide a similarity-based search engine based on approximate k-NN search over document embeddings. k-NN ability and indexing documents along with their vector reprsentation is provided by [**OpenDistro for ElasticSearch**](https://opendistro.github.io/for-elasticsearch/) and document embedding is extrapolated from individual words embeddings obtained from pre-trained and aligned [**FastText**](https://fasttext.cc/docs/en/aligned-vectors.html) dictionaries in french, german, english and italian. Typical use of our solution : recommendation and suggestion based on a reference document or natural language queries.
+Here we provide a similarity-based search engine based on approximate k-NN search over document embeddings. k-NN ability and indexing documents along with their vector reprsentation is provided by [**OpenDistro for ElasticSearch**](https://opendistro.github.io/for-elasticsearch/) and document embedding is extrapolated from individual words embeddings obtained from pre-trained and aligned [**FastText**](https://fasttext.cc/docs/en/aligned-vectors.html) dictionaries in french, german, english and italian. 
+The process of generating vector representations of documents is handled by a simple REST API built with the [**Django REST framework**](https://www.django-rest-framework.org/)
+Typical use-case of our solution : recommendation and suggestion based on a reference document or natural language queries.
+
 
 # Requirements
 Python 3 and the following modules should be installed :
