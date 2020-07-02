@@ -15,12 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from rest_framework.urlpatterns import format_suffix_patterns
+from django.conf.urls import include
 
 from doc2vec import views
+
+baseUrl = "api/v1/"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Adding a new URL
-    path('model/', views.call_model.as_view())
+    path('model/', views.call_model.as_view()),
+
+    # API routing
+    path(baseUrl + "auth/", include('api.authentication.urls')),
+    path(baseUrl + "config/", include('api.config.urls')),
+    path(baseUrl + "vectors/", include('api.vectors.urls'))
 ]
