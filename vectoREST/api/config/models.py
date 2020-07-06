@@ -10,6 +10,7 @@ METHOD = [
     (SPECTRAL, ('Spectral'))
 ]
 
+
 class Config(models.Model):
     # Model
     method = models.CharField(choices=METHOD, default=KMEANS, max_length=13)

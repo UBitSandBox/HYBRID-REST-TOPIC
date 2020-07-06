@@ -1,6 +1,6 @@
-from django.conf.urls import url
+from django.urls import path
 from api.vectors import views
 
 urlpatterns = [
-    url('', views.Vectors.as_view())
+    path('', views.Vectors.as_view())
 ]
