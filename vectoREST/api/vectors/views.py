@@ -12,7 +12,9 @@ from ..permissions import VectorsRight
 class Vectors(APIView):
     permission_classes = (IsAuthenticated, VectorsRight)
 
-    def get(self, request):
-        return JsonResponse("Get vectors test!", safe=False)
+    def post(self, request):
+        content = request.POST.get('content')
+        return JsonResponse("Post vectors test!", safe=False)
         # 'safe=False' for objects serialization
+
 
