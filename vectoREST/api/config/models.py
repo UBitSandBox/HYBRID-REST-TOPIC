@@ -16,3 +16,5 @@ class Config(models.Model):
     n_clusters = models.IntegerField()
     min_length = models.IntegerField()
     max_length = models.IntegerField()
+    description = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)

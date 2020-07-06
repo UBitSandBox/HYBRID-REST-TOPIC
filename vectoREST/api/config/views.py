@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import Config
 from .serializers import ConfigSerializer
 
@@ -56,6 +56,9 @@ class ConfigDetail(APIView):
     * Only member of config group are able to access this view.
     """
 
+    # Set API policy
+    permission_classes = (IsAuthenticated, ConfigRight)
+
     def get_object(self, pk):
         try:
             return Config.objects.get(pk=pk)
@@ -66,3 +69,8 @@ class ConfigDetail(APIView):
         config = self.get_object(pk)
         serializer = ConfigSerializer(config)
         return Response(serializer.data)
+
+    def delete(self, request, pk):
+        config = self.get_object(pk)
+        config.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
