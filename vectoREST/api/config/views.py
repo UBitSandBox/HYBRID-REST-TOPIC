@@ -13,6 +13,40 @@ from .serializers import ConfigSerializer
 from ..permissions import ConfigRight
 
 
+class ConfigView(APIView):
+    """
+    View to get current configuration and create a new one.
+
+    * Requires token authentication.
+    * Only member of config group are able to access this view.
+    """
+    # Set API policy
+    permission_classes = (IsAuthenticated, ConfigRight)
+
+    def get(self, request):
+        """
+        Get the current configuration
+        :param request:
+        :return:
+        """
+        config = Config.objects.latest('id')
+        serializer = ConfigSerializer(config)
+        return Response(serializer.data)
+
+    def post(self, request):
+        """
+        Create a new configuration
+        :param request:
+        :return:
+        """
+        data = JSONParser().parse(request)
+        serializer = ConfigSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ConfigList(APIView):
     """
     View to list all configurations in the system.
@@ -33,20 +67,7 @@ class ConfigList(APIView):
         configs = Config.objects.all()
         serializer = ConfigSerializer(configs, many=True)
         return JsonResponse(serializer.data, safe=False)
-        # 'safe=False' for objects serialization
 
-    def post(self, request):
-        """
-        Create a new configuration
-        :param request:
-        :return:
-        """
-        data = JSONParser().parse(request)
-        serializer = ConfigSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ConfigDetail(APIView):
     """
@@ -66,11 +87,23 @@ class ConfigDetail(APIView):
             raise Http404
 
     def get(self, request, pk):
+        """
+        Get a configuration with its id
+        :param request:
+        :param pk:
+        :return:
+        """
         config = self.get_object(pk)
         serializer = ConfigSerializer(config)
         return Response(serializer.data)
 
     def delete(self, request, pk):
+        """
+        Delete a configuration with its id
+        :param request:
+        :param pk:
+        :return:
+        """
         config = self.get_object(pk)
         config.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
