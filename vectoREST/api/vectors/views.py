@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http.response import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, NotFound
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
@@ -34,16 +34,24 @@ class Vectors(APIView):
            lang != 'fr' and \
            lang != 'de' and \
            lang != 'it':
-            return JsonResponse("error", status=status.HTTP_422_UNPROCESSABLE_ENTITY, safe=False)
-        # TODO: Create a class error for this
-
+            raise NotFound(detail="Language '" + lang + "' is not found")
 
         # Retrieve the file
-        if 'file' not in request.data:
-            raise ParseError("File is required")
-        file = request.data['file']
+        # if 'file' not in request.data:
+        #     raise ParseError("A file is required")
+        # file = request.data['file']
 
-        # TODO: Do something with the file...
+        if 'content' not in request.data:
+            raise ParseError("Content is required")
+        content = request.data['content']
 
-        # TODO: Return a reel response
-        return JsonResponse("ok!", status=status.HTTP_200_OK, safe=False)
+        # TODO: Do something with the content...
+
+        dense_vector = {
+            "0": 0.4433,
+            "1": 0.2244,
+            "2": 0.2345
+        }
+
+        response = dict(lang=lang, dense_vector=dense_vector)
+        return JsonResponse(response, status=status.HTTP_200_OK)
