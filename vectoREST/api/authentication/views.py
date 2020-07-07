@@ -1,7 +1,4 @@
-from django.shortcuts import render
-import datetime
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.utils import datetime_to_epoch
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
