@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 # Define choices
@@ -14,8 +15,9 @@ METHOD = [
 class Config(models.Model):
     # Model
     method = models.CharField(choices=METHOD, default=KMEANS, max_length=13)
-    n_clusters = models.IntegerField()
-    min_length = models.IntegerField()
-    max_length = models.IntegerField()
+    n_clusters = models.IntegerField(validators=[MinValueValidator(1)])
+    min_length = models.IntegerField(validators=[MinValueValidator(1)])
+    max_length = models.IntegerField(validators=[MinValueValidator(1)])
+    vector_dimension = models.IntegerField(validators=[MinValueValidator(1)])
     description = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
