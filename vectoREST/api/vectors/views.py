@@ -3,9 +3,9 @@ from django.shortcuts import render
 from django.http.response import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
+from rest_framework.exceptions import ParseError
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .serializers import VectorSerializer
 
 from ..permissions import VectorsRight
 
@@ -17,20 +17,33 @@ class Vectors(APIView):
     * Requires token authentication.
     * Only member of vector group are able to access this view.
     """
+
+    # Set policy right
     permission_classes = (IsAuthenticated, VectorsRight)
 
-    def post(self, request):
+    def post(self, request, lang):
         """
         Get dense vector from a doc
+        :param lang:
         :param request:
         :return:
         """
 
-        data = JSONParser().parse(request)
-        serializer = VectorSerializer(data=data)
+        # Check if lang is correct
+        if lang != 'en' and \
+           lang != 'fr' and \
+           lang != 'de' and \
+           lang != 'it':
+            return JsonResponse("error", status=status.HTTP_422_UNPROCESSABLE_ENTITY, safe=False)
+        # TODO: Create a class error for this
 
-        # TODO: Do something with the data...
 
-        if serializer.is_valid():
-            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Retrieve the file
+        if 'file' not in request.data:
+            raise ParseError("File is required")
+        file = request.data['file']
+
+        # TODO: Do something with the file...
+
+        # TODO: Return a reel response
+        return JsonResponse("ok!", status=status.HTTP_200_OK, safe=False)
