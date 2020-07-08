@@ -1,4 +1,7 @@
 # HYBRID-REST-TOPIC
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c22e79c94f3749deaf16c6ed705affe2)](https://app.codacy.com/gh/UBitSandBox/HYBRID-REST-TOPIC?utm_source=github.com&utm_medium=referral&utm_content=UBitSandBox/HYBRID-REST-TOPIC&utm_campaign=Badge_Grade_Dashboard)
+
 Here we provide a similarity-based search engine based on approximate k-NN search over document embeddings. k-NN ability and indexing documents along with their vector reprsentation is provided by [**OpenDistro for ElasticSearch**](https://opendistro.github.io/for-elasticsearch/) and document embedding is using the [**Universal Sentence Encoder - multilingual**](https://tfhub.dev/google/universal-sentence-encoder-multilingual/3) model. 
 The process of generating vector representations of documents is handled by a simple REST API built with the [**Django REST framework**](https://www.django-rest-framework.org/)  
 Typical use-case of our solution : recommendation and suggestion based on a reference document or natural language queries.
