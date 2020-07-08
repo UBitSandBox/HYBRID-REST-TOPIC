@@ -1,15 +1,13 @@
-import numpy
 from django.http.response import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.exceptions import ParseError, NotFound
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .VectorGenerator import VectorGenerator
 from .apps import VectorsConfig
 from ..permissions import VectorsRight
 
 
 class Vectors(APIView):
+    
     """
     View to obtain dense vector from a doc
 
@@ -30,7 +28,6 @@ class Vectors(APIView):
 
         # Check if lang is correct
         list_of_supported_lang = ['en','fr','de','it']
-        
         if lang not in list_of_supported_lang:
             raise NotFound(detail="Language '{lang}' is not found. Try one of the following : {suggestions}".format(lang=lang, suggestions = ", ".join(list_of_supported_lang)))
 
