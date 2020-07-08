@@ -1,8 +1,11 @@
+import numpy
 from django.http.response import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from .VectorGenerator import VectorGenerator
+from .apps import VectorsConfig
 
 from ..permissions import VectorsRight
 
@@ -40,15 +43,25 @@ class Vectors(APIView):
 
         if 'content' not in request.data:
             raise ParseError("Content is required")
+
         content = request.data['content']
 
         # TODO: Do something with the content...
+        dense_vector = VectorsConfig.vector_generator.doc2vec(document=content)
 
-        dense_vector = {
-            "0": 0.4433,
-            "1": 0.2244,
-            "2": 0.2345
-        }
 
-        response = dict(lang=lang, dense_vector=dense_vector)
-        return JsonResponse(response, status=status.HTTP_200_OK)
+
+        dict_format_response = dict(zip(range(len(dense_vector)), map(float,dense_vector)))
+
+        print(dict_format_response)
+
+        # dense_vector = {
+        #     "0": 0.4433,
+        #     "1": 0.2244,
+        #     "2": 0.2345
+        # }
+
+        response = dict(lang=lang, dense_vector=dict_format_response)
+        print(response)
+
+        return JsonResponse(response, safe=True)
