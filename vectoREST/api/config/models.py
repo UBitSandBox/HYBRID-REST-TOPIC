@@ -23,4 +23,4 @@ class Config(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "id: " + str(self.id) + " description: " + self.description
+        return "id : {} , description : {}".format(str(self.id), self.description)
