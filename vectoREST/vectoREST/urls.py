@@ -28,6 +28,6 @@ urlpatterns = [
 
     # API routing
     path(baseUrl + "auth/", include('api.authentication.urls')),
-    path(baseUrl + "config/", include('api.config.urls')),
+    path(baseUrl, include('api.config.urls')),
     path(baseUrl + "vectors/", include('api.vectors.urls'))
 ]
