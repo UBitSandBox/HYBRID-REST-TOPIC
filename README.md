@@ -19,7 +19,7 @@ Python 3.x and the following modules should be installed :
 # Installation
 
 ## Install required modules
-On a terminal type the following command:
+On a Terminal type the following command:
 
 <pre>
 pip install django
@@ -30,8 +30,16 @@ pip install numpy
 pip install scikit-learn
 </pre>
 
-## Run/Debug configuration in PyCharm
-Open the Run/Debug Configurations editor and create a new python configuration:
+## Run/Debug configuration (example in PyCharm)
+
+### In Terminal : 
+<pre>
+python3 /vectoREST/manage.py runserver
+</pre>
+
+### In PyCharm's "Run/Debug Configurations" :
+
+Create a new Python configuration according to the following
 
 | Parameter          |      Value                                     |
 |--------------------|------------------------------------------------|
