@@ -67,4 +67,4 @@ Open the Run/Debug Configurations editor and create a new python configuration:
 
 
 # How to use it ?
-...work in progress...
+https://documenter.getpostman.com/view/5913280/T17JAnWN
