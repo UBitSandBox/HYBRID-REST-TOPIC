@@ -29,6 +29,14 @@ class ConfigViewSet(mixins.RetrieveModelMixin,
 
     @action(detail=False)
     def current(self, request, *args, **kwargs):
+        """
+        Get the current configuration
+
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         config = Config.objects.latest('id')
         serializer = ConfigSerializer(config)
         return Response(serializer.data)
