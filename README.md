@@ -32,6 +32,39 @@ Transactions of the Association for Computational Linguistics, 5, 135–146.
 ---
 
 # Installation
-...work in progress...
+## Install python3 (for windows)
+<pre>choco install python3 --pre</pre>
+
+## Install modules
+On the terminal of PyCharm type the following command:
+
+<pre>
+pip install django
+pip install djangorestframework
+pip install spacy
+pip install numpy
+pip install scikit-learn
+</pre>
+
+## Download the dictionaries
+On the terminal of PyCharm type the following command:
+<pre>
+python3 -m spacy download de_core_news_sm
+python3 -m spacy download fr_core_news_sm
+python3 -m spacy download en_core_web_sm
+python3 -m spacy download it_core_news_sm
+</pre>
+
+## Run/Debug configuration in PyCharm
+Open the Run/Debug Configurations editor and create a new python configuration:
+
+| Parameter          |      Value                                     |
+|--------------------|------------------------------------------------|
+| Script path        | ...../HYBRID-REST-TOPIC/vectoREST/manage.py    |
+| Parameters         | runserver                                      |
+| Python interpreter | Choose the last version of Python3             |
+| Working directory  | ...../HYBRID-REST-TOPIC/vectoREST              |
+
+
 # How to use it ?
 ...work in progress...
