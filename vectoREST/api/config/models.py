@@ -21,3 +21,6 @@ class Config(models.Model):
     vector_dimension = models.IntegerField(validators=[MinValueValidator(1)])
     description = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "id: " + str(self.id) + " description: " + self.description
