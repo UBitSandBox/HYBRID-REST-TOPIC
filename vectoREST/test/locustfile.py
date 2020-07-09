@@ -1,4 +1,7 @@
 import json
+import random
+import string
+
 from locust import HttpUser, task, between
 
 
@@ -6,6 +9,9 @@ class LoadTestUser(HttpUser):
     wait_time = between(0, 0)
     baseUrl = "http://127.0.0.1:8000/api/v1/"
     token = ""
+
+    file_content = open("content.txt", "r")
+    content = file_content.read()
 
     def on_start(self):
         url = self.baseUrl + "auth/"
@@ -21,8 +27,9 @@ class LoadTestUser(HttpUser):
 
     @task
     def vectors(self):
+
         url = self.baseUrl + "vectors/fr/"
-        payload = {'content': 'Je suis une phrase de test'}
+        payload = {'content': self.content}
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + self.token
