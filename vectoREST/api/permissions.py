@@ -7,7 +7,8 @@ class ConfigRight(BasePermission):
     """
     def has_permission(self, request, view):
         return bool(request.user and request.user.groups.filter(name='config'))
-    
+
+
 class VectorsRight(BasePermission):
     """
     Right for endpoint /vectors
