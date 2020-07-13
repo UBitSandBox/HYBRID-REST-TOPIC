@@ -15,6 +15,7 @@ class ConfigViewSet(mixins.RetrieveModelMixin,
                     mixins.ListModelMixin,
                     viewsets.GenericViewSet):
     """
+
     This viewset automatically provides `list`, `create`, `retrieve`,
     and `destroy` actions.
 

@@ -8,6 +8,7 @@ from vectoREST.shared import Shared
 
 class Vectors(APIView):
     """
+
     View to obtain dense vector from a doc
 
     * Requires token authentication.
