@@ -16,7 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
+from api.config.models import Config
+from vectoREST.VectorGenerator import VectorGenerator
+from vectoREST.shared import Shared
 
+# Get configuration for vector generator
+currentConfig = Config.objects.latest('id')
+Shared.vector_generator = VectorGenerator(method=currentConfig.method, n_clusters=currentConfig.n_clusters)
 
 baseUrl = "api/v1/"
 

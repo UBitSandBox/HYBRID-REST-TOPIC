@@ -4,8 +4,9 @@ from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from .models import Config
 from .serializers import ConfigSerializer
-
 from ..permissions import ConfigRight
+from vectoREST.shared import Shared
+from vectoREST.VectorGenerator import VectorGenerator
 
 
 class ConfigViewSet(mixins.RetrieveModelMixin,
@@ -43,3 +44,5 @@ class ConfigViewSet(mixins.RetrieveModelMixin,
 
     def perform_create(self, serializer):
         serializer.save()
+        data = self.request.data
+        Shared.vector_generator = VectorGenerator(method=data['method'], n_clusters=data['n_clusters'])
