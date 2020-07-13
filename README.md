@@ -31,18 +31,11 @@ pip install spacy
 pip install https://github.com/MartinoMensio/spacy-universal-sentence-encoder-tfhub/releases/download/xx_use_md-0.2.3/xx_use_md-0.2.3.tar.gz#xx_use_md-0.2.3
 pip install numpy
 pip install scikit-learn
+pip install python-dotenv
 </pre>
 
-## Run/Debug configuration (example in PyCharm)
-
-### In Terminal : 
-<pre>
-python3 /vectoREST/manage.py runserver
-</pre>
-
-### In PyCharm's "Run/Debug Configurations" :
-
-Create a new Python configuration according to the following
+## Configuration (PyCharm)
+Open the Run/Debug Configurations editor ans create a new Python configuration according to the following:
 
 | Parameter          |      Value                                     |
 |--------------------|------------------------------------------------|
@@ -50,6 +43,16 @@ Create a new Python configuration according to the following
 | Parameters         | runserver                                      |
 | Python interpreter | Choose the last version of Python3             |
 | Working directory  | ...../HYBRID-REST-TOPIC/vectoREST              |
+
+## Run server
+
+### In Terminal : 
+<pre>
+python3 /vectoREST/manage.py runserver
+</pre>
+
+### In PyCharm
+Just click on the Run button
 
 
 # How to use it ?
