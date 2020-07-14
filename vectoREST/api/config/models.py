@@ -5,10 +5,12 @@ from django.db import models
 AGGLOMERATIVE = 'agglomerative'
 KMEANS = 'k-means'
 SPECTRAL = 'spectral'
+NONE = 'None'
 METHOD = [
     (AGGLOMERATIVE, ('Agglomerative')),
     (KMEANS, ('K-means')),
-    (SPECTRAL, ('Spectral'))
+    (SPECTRAL, ('Spectral')),
+    (NONE, ('None'))
 ]
 
 
