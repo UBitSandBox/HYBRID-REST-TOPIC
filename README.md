@@ -44,6 +44,11 @@ Open the Run/Debug Configurations editor ans create a new Python configuration a
 | Python interpreter | Choose the last version of Python3             |
 | Working directory  | ...../HYBRID-REST-TOPIC/vectoREST              |
 
+## Configuration
+At the root of the project, create a file .env and copy the environment variables from the .env.example file.
+
+Fill the environment variables with the appropriate values.
+
 ## Run server
 
 ### In Terminal : 
