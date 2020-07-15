@@ -23,6 +23,8 @@ from vectoREST.shared import Shared
 # Get configuration for vector generator
 currentConfig = Config.objects.latest('id')
 Shared.vector_generator = VectorGenerator(method=currentConfig.method, n_clusters=currentConfig.n_clusters)
+for _ in range(3):
+    Shared.vector_generators.append(VectorGenerator(method=currentConfig.method, n_clusters=currentConfig.n_clusters))
 
 baseUrl = "api/v1/"
 

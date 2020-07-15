@@ -42,34 +42,42 @@ class Vectors(APIView):
         if not serializer.is_valid():
             return JsonResponse(serializer.errors)
 
-        contents = serializer.data
+        data = serializer.data
+        contents = []
+
+        for i in data:
+            contents.append(data[i])
+
+        #dense_vector = Shared.vector_generator.doc2vec(document=contents[0])
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = [executor.submit(Shared.vector_generator.doc2vec, contents[id_content]) for id_content in
-                       contents]
-
+            results = [executor.submit(Shared.vector_generators[i].doc2vec, contents[i]) for i in range(len(contents))]
             for f in concurrent.futures.as_completed(results):
                 vector = f.result()
                 dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
                 response = dict(lang=lang, dense_vector=dict_format_response)
 
-        return JsonResponse(response.data)
+        return JsonResponse(response)
 
-
-
-        # if 'content' not in request.data:
-        #     raise ParseError("Content is required")
+        # serializer = VectorsSerializer(data=request.data)
+        # if not serializer.is_valid():
+        #     return JsonResponse(serializer.errors)
         #
-        # content = request.data['content']
+        # contents = serializer.data
+        #
+        #
+        #
+        # content = contents["_0"]
+        #
         # dense_vector = Shared.vector_generator.doc2vec(document=content)
-        # dict_format_response = dict(zip(range(len(dense_vector)), map(float, dense_vector)))
-        # response = dict(lang=lang, dense_vector=dict_format_response)
         #
         # # Test
         # with concurrent.futures.ProcessPoolExecutor() as executor:
         #     results = [executor.submit(Shared.vector_generator.doc2vec, content) for i in range(10)]
         #
         #     for f in concurrent.futures.as_completed(results):
-        #         print(f.result())
+        #         vector = f.result()
+        #         dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
+        #         response = dict(lang=lang, dense_vector=dict_format_response)
         #
         # return JsonResponse(response, safe=True)
