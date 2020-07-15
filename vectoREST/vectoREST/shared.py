@@ -1,3 +1,3 @@
 class Shared:
     vector_generator = None
-    vector_generators = []
+    #vector_generators = []

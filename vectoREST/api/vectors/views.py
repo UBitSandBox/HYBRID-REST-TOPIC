@@ -48,10 +48,10 @@ class Vectors(APIView):
         for i in data:
             contents.append(data[i])
 
-        #dense_vector = Shared.vector_generator.doc2vec(document=contents[0])
+        dense_vector = Shared.vector_generator.doc2vec(document=contents[0])
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = [executor.submit(Shared.vector_generators[i].doc2vec, contents[i]) for i in range(len(contents))]
+            results = [executor.submit(Shared.vector_generator.doc2vec, contents[i]) for i in range(len(contents))]
             for f in concurrent.futures.as_completed(results):
                 vector = f.result()
                 dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
