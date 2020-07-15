@@ -54,7 +54,8 @@ class Vectors(APIView):
                 try:
                     vector = future.result()
                 except Exception as exc:
-                    raise ParseError('%r generated an exception: %s' % (result, exc))
+                    #raise ParseError('%r generated an exception: %s' % (result, exc))
+                    responses[result] = {"error": exc}
                 else:
                     dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
                     response = dict(lang=lang, dense_vector=dict_format_response)
