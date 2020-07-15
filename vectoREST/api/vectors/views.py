@@ -42,42 +42,23 @@ class Vectors(APIView):
         if not serializer.is_valid():
             return JsonResponse(serializer.errors)
 
-        data = serializer.data
-        contents = []
+        contents = serializer.data
 
-        for i in data:
-            contents.append(data[i])
+        responses = dict()
 
-        dense_vector = Shared.vector_generator.doc2vec(document=contents[0])
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            results = {executor.submit(Shared.vector_generator.doc2vec, content): content for content in contents}
+            for future in concurrent.futures.as_completed(results):
+                result = results[future]
+                try:
+                    vector = future.result()
+                except Exception as exc:
+                    print('%r generated an exception: %s' % (result, exc))
+                else:
+                    dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
+                    response = dict(lang=lang, dense_vector=dict_format_response)
+                    print(response)
+                    responses[result] = response
+                    print('%r vector is %d bytes' % (result, len(vector)))
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = [executor.submit(Shared.vector_generator.doc2vec, contents[i]) for i in range(len(contents))]
-            for f in concurrent.futures.as_completed(results):
-                vector = f.result()
-                dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
-                response = dict(lang=lang, dense_vector=dict_format_response)
-
-        return JsonResponse(response)
-
-        # serializer = VectorsSerializer(data=request.data)
-        # if not serializer.is_valid():
-        #     return JsonResponse(serializer.errors)
-        #
-        # contents = serializer.data
-        #
-        #
-        #
-        # content = contents["_0"]
-        #
-        # dense_vector = Shared.vector_generator.doc2vec(document=content)
-        #
-        # # Test
-        # with concurrent.futures.ProcessPoolExecutor() as executor:
-        #     results = [executor.submit(Shared.vector_generator.doc2vec, content) for i in range(10)]
-        #
-        #     for f in concurrent.futures.as_completed(results):
-        #         vector = f.result()
-        #         dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
-        #         response = dict(lang=lang, dense_vector=dict_format_response)
-        #
-        # return JsonResponse(response, safe=True)
+        return JsonResponse(responses)
