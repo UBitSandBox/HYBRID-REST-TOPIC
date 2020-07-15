@@ -4,6 +4,7 @@ from django.http.response import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 from .serializers import VectorsSerializer
 from ..permissions import VectorsRight
@@ -40,13 +41,13 @@ class Vectors(APIView):
         # Get the data from the request
         serializer = VectorsSerializer(data=request.data)
         if not serializer.is_valid():
-            return JsonResponse(serializer.errors)
+            return JsonResponse(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         contents = serializer.data
         responses = dict()
 
         # Get vector in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
             results = {executor.submit(Shared.vector_generator.doc2vec, content): content for content in contents}
             for future in concurrent.futures.as_completed(results):
                 result = results[future]
@@ -54,9 +55,11 @@ class Vectors(APIView):
                     vector = future.result()
                 except Exception as exc:
                     print('%r generated an exception: %s' % (result, exc))
+                    raise ParseError('%r generated an exception: %s' % (result, exc))
                 else:
                     dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
                     response = dict(lang=lang, dense_vector=dict_format_response)
+                    print(response)
                     responses[result] = response
 
         return JsonResponse(responses)
