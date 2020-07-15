@@ -37,16 +37,16 @@ class Vectors(APIView):
                 detail="Language '{lang}' is not found. Try one of the following : {suggestions}".format(lang=lang,
                                                                                                          suggestions=", ".join(
                                                                                                              list_of_supported_lang)))
-
+        # Get the data from the request
         serializer = VectorsSerializer(data=request.data)
         if not serializer.is_valid():
             return JsonResponse(serializer.errors)
 
         contents = serializer.data
-
         responses = dict()
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        # Get vector in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             results = {executor.submit(Shared.vector_generator.doc2vec, content): content for content in contents}
             for future in concurrent.futures.as_completed(results):
                 result = results[future]
@@ -57,8 +57,6 @@ class Vectors(APIView):
                 else:
                     dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
                     response = dict(lang=lang, dense_vector=dict_format_response)
-                    print(response)
                     responses[result] = response
-                    print('%r vector is %d bytes' % (result, len(vector)))
 
         return JsonResponse(responses)
