@@ -48,4 +48,6 @@ class ConfigViewSet(mixins.RetrieveModelMixin,
         serializer.save()
         # Create new vector generator with the current configuration
         data = self.request.data
-        Shared.vector_generator = VectorGenerator(method=data['method'], n_clusters=data['n_clusters'])
+        #Shared.vector_generator = VectorGenerator(method=data['method'], n_clusters=data['n_clusters'])
+        for i in Shared.vector_generators:
+            Shared.vector_generators[i] = VectorGenerator(method=data['method'], n_clusters=data['n_clusters'])

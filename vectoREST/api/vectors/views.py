@@ -47,19 +47,22 @@ class Vectors(APIView):
         responses = dict()
 
         # Get vector in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
-            results = {executor.submit(Shared.vector_generator.doc2vec, contents[content]): content for content in contents}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            results = {executor.submit(Shared.vector_generators[key_content].doc2vec, contents[key_content]): key_content for key_content in contents}
+            print([(len(contents[key_content]), type(contents[key_content]), contents[key_content][:20]) for key_content in contents])
             for future in concurrent.futures.as_completed(results):
-                result = results[future]
+                print({"future: %s" % future})
+                key_result = results[future]
+                print({"key_result: %s" % key_result})
                 try:
                     vector = future.result()
                 except Exception as exc:
                     #raise ParseError('%r generated an exception: %s' % (result, exc))
-                    responses[result] = {"error": exc}
+                    responses[key_result] = {"error": '%r generated an exception: %s' % (key_result, exc)}
                 else:
                     dict_format_response = dict(zip(range(len(vector)), map(float, vector)))
                     response = dict(lang=lang, dense_vector=dict_format_response)
                     print(response)
-                    responses[result] = response
+                    responses[key_result] = response
 
         return JsonResponse(responses)
