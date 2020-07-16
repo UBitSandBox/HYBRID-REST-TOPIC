@@ -47,7 +47,7 @@ class Vectors(APIView):
         responses = dict()
 
         # Get vector in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=None) as executor:
             results = {executor.submit(Shared.vector_generators[key_content].doc2vec, contents[key_content]): key_content for key_content in contents}
             print([(len(contents[key_content]), type(contents[key_content]), contents[key_content][:20]) for key_content in contents])
             for future in concurrent.futures.as_completed(results):
