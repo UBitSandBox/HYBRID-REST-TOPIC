@@ -27,6 +27,7 @@ On a Terminal type the following command:
 <pre>
 pip install django
 pip install djangorestframework
+pip install djangorestframework-simplejwt
 pip install spacy
 pip install https://github.com/MartinoMensio/spacy-universal-sentence-encoder-tfhub/releases/download/xx_use_md-0.2.3/xx_use_md-0.2.3.tar.gz#xx_use_md-0.2.3
 pip install numpy
