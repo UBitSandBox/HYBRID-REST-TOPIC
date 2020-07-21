@@ -13,7 +13,7 @@ class VectorGenerator:
             'agglomerative' : AgglomerativeClustering,
             'spectral' : SpectralClustering
         }
-        if not method == "None":
+        if not method in ["None", "weighted"]:
             self.cluster_maker = method_switcher[method](n_clusters=n_clusters)
         self.nlp = spacy.load('xx_use_md')
         self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
@@ -30,5 +30,10 @@ class VectorGenerator:
     def doc2vec(self, document):
         if self.method == "None":
             return self.nlp(document).vector
+        if self.method == "weighted":
+            vectors = self._vectorise_by_sentence(document=document)
+            mean = numpy.mean(vectors, axis=0)
+            weights = [numpy.exp(-numpy.linalg.norm(v-mean)**2) for v in vectors]
+            return numpy.average(vectors, axis=0, weights=weights)
         return self._aggregate(vectors=self._vectorise_by_sentence(document=document))
 
