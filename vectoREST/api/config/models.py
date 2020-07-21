@@ -6,11 +6,13 @@ AGGLOMERATIVE = 'agglomerative'
 KMEANS = 'k-means'
 SPECTRAL = 'spectral'
 NONE = 'None'
+WEIGHTED = 'weighted'
 METHOD = [
     (AGGLOMERATIVE, ('Agglomerative')),
     (KMEANS, ('K-means')),
     (SPECTRAL, ('Spectral')),
-    (NONE, ('None'))
+    (NONE, ('None')),
+    (WEIGHTED,('Weighted'))
 ]
 
 
