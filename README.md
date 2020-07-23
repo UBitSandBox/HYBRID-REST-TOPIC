@@ -62,4 +62,22 @@ Just click on the Run button
 
 
 # How to use it ?
-https://documenter.getpostman.com/view/5913280/T17JAnWN
+
+Valid keywords for the 'method' argument in the config are :
+
+### Not using clustering
+
+- 'None'
+- 'weighted'
+
+### Using clustering
+
+- 'spectral'
+- 'k-means'
+- 'agglomerative'
+
+If using clustering, 'n_clusters' should be given as an integer corresponding to the number of clusters to identify, I recommend you keep it under 5.
+Remember that if using clusters, **you should provide documents at least n_clusters sentences long.**
+
+
+[See the POST/GET requests documentation for Authentification, Configuration, Vector generation ...](https://documenter.getpostman.com/view/5913280/T17JAnWN)
