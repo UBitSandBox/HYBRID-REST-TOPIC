@@ -8,12 +8,14 @@ from sklearn.cluster import SpectralClustering
 class VectorGenerator:
     def __init__(self, method="None", n_clusters=3):
         self.method = method
+        self.n_clusters = n_clusters
+        assert method in ["None","weighted","k-means","agglomerative","spectral"]
         method_switcher = {
             'k-means' : KMeans,
             'agglomerative' : AgglomerativeClustering,
             'spectral' : SpectralClustering
         }
-        if not method in ["None", "weighted"]:
+        if method in ["k-means","agglomerative","spectral"]:
             self.cluster_maker = method_switcher[method](n_clusters=n_clusters)
         self.nlp = spacy.load('xx_use_md')
         self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
@@ -22,6 +24,10 @@ class VectorGenerator:
         return [self.nlp(str(sent)).vector for sent in self.nlp(document).sents]
     
     def _aggregate(self, vectors):
+        if len(vectors) < self.n_clusters:
+            mean = numpy.mean(vectors, axis=0)
+            weights = [numpy.exp(-numpy.linalg.norm(v-mean)**2) for v in vectors]
+            return numpy.average(vectors, axis=0, weights=weights)
         labels = self.cluster_maker.fit_predict(vectors).tolist()
         main_cluster = max(set(labels), key=labels.count)
         return numpy.mean([vector for (vector, should_keep) 
@@ -30,10 +36,11 @@ class VectorGenerator:
     def doc2vec(self, document):
         if self.method == "None":
             return self.nlp(document).vector
-        if self.method == "weighted":
+        elif self.method == "weighted":
             vectors = self._vectorise_by_sentence(document=document)
             mean = numpy.mean(vectors, axis=0)
             weights = [numpy.exp(-numpy.linalg.norm(v-mean)**2) for v in vectors]
             return numpy.average(vectors, axis=0, weights=weights)
-        return self._aggregate(vectors=self._vectorise_by_sentence(document=document))
+        else:
+            return self._aggregate(vectors=self._vectorise_by_sentence(document=document))
 
