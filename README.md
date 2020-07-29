@@ -6,6 +6,7 @@ Here we provide a similarity-based search engine based on approximate k-NN searc
 The process of generating vector representations of documents is handled by a simple REST API built with the [**Django REST framework**](https://www.django-rest-framework.org/)  
 Typical use-case of our solution : recommendation and suggestion based on a reference document or natural language queries.
 
+This REST API is to use with [this Index Manager](https://github.com/Shiaroku/HYBRID-REST-TOPIC-INDEX-MANAGER)  
 
 # Requirements
 Python 3.x and the following modules should be installed :
