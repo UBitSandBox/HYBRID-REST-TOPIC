@@ -30,8 +30,7 @@ class VectorGenerator:
             return numpy.average(vectors, axis=0, weights=weights)
         labels = self.cluster_maker.fit_predict(vectors).tolist()
         main_cluster = max(set(labels), key=labels.count)
-        return numpy.mean([vector for (vector, should_keep) 
-                           in zip(vectors, [label == main_cluster for label in labels]) if should_keep], axis=0).tolist()
+        return numpy.mean([vector for (vector, should_keep) in zip(vectors, [label == main_cluster for label in labels]) if should_keep], axis=0)
     
     def doc2vec(self, document):
         if self.method == "None":
